@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+  sales sales[]
+  salesProducts salesProducts[]
+}
+
+model sales {
+  id          String   @id @default(uuid())
+  reference   String
+  status      String
+  amount      Int
+  totalPrice  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String   @db.VarChar(250)
+  user        users    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  salesProducts salesProducts[]
+
+  @@map("sales")
+}
+
+model products {
+  id          String   @id @default(uuid())
+  reference   String
+  name        String
+  description String
+  price       Int
+  category    String   @default("shirt")
+  size        String   @default("M")
+  color       String   @default("black")
+  stock       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  salesProducts salesProducts[]
+
+  @@map("products")
+}
+
+model salesProducts {
+  id          String   @id @default(uuid())
+  saleId      String
+  productId   String
+  quantity    Int
+  userId      String   @db.VarChar(250)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product     products @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sale        sales    @relation(fields: [saleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user        users    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("sales_products")
+}
